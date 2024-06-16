@@ -5,22 +5,26 @@ import time
 # Initialize Pygame
 pygame.init()
 
-# Set up display
-WIDTH, HEIGHT = 800, 600
-win = pygame.display.set_mode((WIDTH, HEIGHT))
+# Set up display to 1440x810 resolution
+WIDTH, HEIGHT = 1440, 810
+win = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Fishing Game")
 
 # Load images
 background_image = pygame.image.load("water.png")
 bobber_image = pygame.image.load("bobber.png")
 fish_image = pygame.image.load("fish.png")
+catch_text_image = pygame.image.load("catch-text.png")  # Load catch text overlay
+away_text_image = pygame.image.load("away-text.png")    # Load away text overlay
 
 # Resize images if needed
 bobber_image = pygame.transform.scale(bobber_image, (80, 160))  # Bigger dimensions for the bobber
 fish_image = pygame.transform.scale(fish_image, (70, 70))  # Bigger dimensions for the fish
 
-# Resize the background to fit the window
+# Resize the background and text overlays to fit the window
 background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+catch_text_image = pygame.transform.scale(catch_text_image, (WIDTH, HEIGHT))
+away_text_image = pygame.transform.scale(away_text_image, (WIDTH, HEIGHT))
 
 # Set up clock
 clock = pygame.time.Clock()
@@ -60,33 +64,42 @@ game_over_text = ""
 retry_button = pygame.Rect(10, 10, 80, 40)
 
 def draw_window():
-    win.blit(background_image, (0, 0))  # Draw the background first
+    # Fill background with black
+    win.fill((0, 0, 0))
+
+    # Calculate the position to center the game content
+    content_x = (win.get_width() - WIDTH) // 2
+    content_y = (win.get_height() - HEIGHT) // 2
+
+    # Draw the background image centered
+    win.blit(background_image, (content_x, content_y))
 
     if game_over:
-        font = pygame.font.Font(None, 74)
-        text = font.render(game_over_text, True, (0, 255, 0) if game_over_text == "IT'S A CATCH!" else (255, 0, 0))
-        win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
+        if game_over_text == "IT'S A CATCH!":
+            win.blit(catch_text_image, (content_x, content_y))
+        else:
+            win.blit(away_text_image, (content_x, content_y))
     else:
-        # Draw the bobber and fish
-        win.blit(bobber_image, (bobber.x, bobber.y))  # Draw bobber next
-        win.blit(fish_image, (fish.x, fish.y))  # Draw fish after to ensure it is in front
+        # Draw the bobber and fish centered
+        win.blit(bobber_image, (bobber.x + content_x, bobber.y + content_y))
+        win.blit(fish_image, (fish.x + content_x, fish.y + content_y))
 
-        # Draw the progress bar container
-        pygame.draw.rect(win, (200, 200, 200), (container_x - 2, container_y - 2, container_width + 4, container_height + 4))
+        # Draw the progress bar container centered
+        pygame.draw.rect(win, (200, 200, 200), (container_x - 2 + content_x, container_y - 2 + content_y, container_width + 4, container_height + 4))
 
-        # Draw the progress bar
+        # Draw the progress bar centered
         progress_height = catch_time * container_height / catch_threshold
-        pygame.draw.rect(win, (255, 255, 255), (container_x, container_y + container_height - progress_height, container_width, progress_height))
+        pygame.draw.rect(win, (255, 255, 255), (container_x + content_x, container_y + container_height - progress_height + content_y, container_width, progress_height))
 
-        # Draw the timer
+        # Draw the timer centered
         font = pygame.font.Font(None, 36)
         timer_text = font.render(f"Time: {int(timer)}", True, (255, 255, 255))
-        win.blit(timer_text, (WIDTH - timer_text.get_width() - 20, 20))
+        win.blit(timer_text, (content_x + WIDTH - timer_text.get_width() - 20, content_y + 20))
 
-    # Draw retry button
+    # Draw retry button centered
     font = pygame.font.Font(None, 36)
     retry_text = font.render("Retry", True, (255, 255, 255))  # White text
-    win.blit(retry_text, (retry_button.x + 5, retry_button.y + 5))
+    win.blit(retry_text, (retry_button.x + content_x + 5, retry_button.y + content_y + 5))
 
     pygame.display.update()
 
@@ -128,7 +141,11 @@ while run:
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if retry_button.collidepoint(event.pos):
+            # Adjust the click position to account for the centered content
+            click_x, click_y = event.pos
+            click_x -= (win.get_width() - WIDTH) // 2
+            click_y -= (win.get_height() - HEIGHT) // 2
+            if retry_button.collidepoint((click_x, click_y)):
                 reset_game()
 
     if not game_over:
