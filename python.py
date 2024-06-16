@@ -21,11 +21,6 @@ away_text_image = pygame.image.load("away-text.png")    # Load away text overlay
 bobber_image = pygame.transform.scale(bobber_image, (80, 160))  # Bigger dimensions for the bobber
 fish_image = pygame.transform.scale(fish_image, (70, 70))  # Bigger dimensions for the fish
 
-# Resize the background and text overlays to fit the window
-background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
-catch_text_image = pygame.transform.scale(catch_text_image, (WIDTH, HEIGHT))
-away_text_image = pygame.transform.scale(away_text_image, (WIDTH, HEIGHT))
-
 # Set up clock
 clock = pygame.time.Clock()
 
@@ -67,12 +62,16 @@ def draw_window():
     # Fill background with black
     win.fill((0, 0, 0))
 
-    # Calculate the position to center the game content
-    content_x = (win.get_width() - WIDTH) // 2
-    content_y = (win.get_height() - HEIGHT) // 2
+    # Get current window size
+    current_width, current_height = win.get_size()
 
-    # Draw the background image centered
-    win.blit(background_image, (content_x, content_y))
+    # Resize the background image to fit the current window size
+    scaled_background = pygame.transform.scale(background_image, (current_width, current_height))
+    win.blit(scaled_background, (0, 0))
+
+    # Calculate the position to center the game content
+    content_x = (current_width - WIDTH) // 2
+    content_y = (current_height - HEIGHT) // 2
 
     if game_over:
         if game_over_text == "IT'S A CATCH!":
