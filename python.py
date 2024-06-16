@@ -25,8 +25,8 @@ background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 # Define bobber and fish properties
-bobber = pygame.Rect((WIDTH - 60) // 2, (HEIGHT - 120) // 2, 60, 120)
-fish = pygame.Rect((WIDTH - 50) // 2, random.randint(0, HEIGHT - 50), 50, 50)
+bobber = pygame.Rect((WIDTH // 4) - 30, (HEIGHT - 120) // 2, 60, 120)
+fish = pygame.Rect((WIDTH // 4) - 25, random.randint(0, HEIGHT - 50), 50, 50)
 
 # Bobber movement variables
 bobber_speed = 5
@@ -40,21 +40,22 @@ fish_direction = 1  # Initial direction
 catch_time = 0
 catch_threshold = 5000  # Time in milliseconds required to catch the fish
 
+# Game state
+game_over = False
+
 def draw_window():
     win.blit(background_image, (0, 0))  # Draw the background first
-    win.blit(bobber_image, (bobber.x, bobber.y))  # Draw bobber next
-    win.blit(fish_image, (fish.x, fish.y))  # Draw fish last to ensure it is in front
-
-    if bobber.colliderect(fish):
-        global catch_time
-        catch_time += clock.get_time()
-        pygame.draw.rect(win, (255, 0, 0), (50, 50, catch_time / 10, 20))
-        if catch_time >= catch_threshold:
-            print("Fish caught!")
-            # Reset game or add more logic here
-            reset_game()
+    if game_over:
+        font = pygame.font.Font(None, 74)
+        text = font.render("IT'S A CATCH!", True, (0, 255, 0))
+        win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
     else:
-        catch_time = 0
+        win.blit(bobber_image, (bobber.x, bobber.y))  # Draw bobber next
+        win.blit(fish_image, (fish.x, fish.y))  # Draw fish after to ensure it is in front
+
+        # Draw the progress bar
+        progress_height = catch_time * HEIGHT / catch_threshold
+        pygame.draw.rect(win, (255, 0, 0), (WIDTH // 4 + 80, HEIGHT - progress_height, 20, progress_height))
 
     pygame.display.update()
 
@@ -69,10 +70,11 @@ def move_fish():
     fish.y = max(0, min(fish.y, HEIGHT - fish.height))
 
 def reset_game():
-    global catch_time
+    global catch_time, game_over
     bobber.y = (HEIGHT - 120) // 2
     fish.y = random.randint(0, HEIGHT - 50)
     catch_time = 0
+    game_over = False
 
 run = True
 while run:
@@ -82,18 +84,27 @@ while run:
         if event.type == pygame.QUIT:
             run = False
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:
-        bobber_direction = -1  # Move up
-    else:
-        bobber_direction = 1   # Move down
+    if not game_over:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            bobber_direction = -1  # Move up
+        else:
+            bobber_direction = 1   # Move down
 
-    # Move the bobber
-    bobber.y += bobber_speed * bobber_direction
-    bobber.y = max(0, min(bobber.y, HEIGHT - bobber.height))
+        # Move the bobber
+        bobber.y += bobber_speed * bobber_direction
+        bobber.y = max(0, min(bobber.y, HEIGHT - bobber.height))
 
-    # Move the fish
-    move_fish()
+        # Move the fish
+        move_fish()
+
+        # Check collision and update progress bar
+        if bobber.colliderect(fish):
+            catch_time += clock.get_time()
+            if catch_time >= catch_threshold:
+                game_over = True
+        else:
+            catch_time = 0
 
     # Draw everything
     draw_window()
