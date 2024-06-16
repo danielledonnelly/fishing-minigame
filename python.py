@@ -90,15 +90,19 @@ def draw_window():
         progress_height = catch_time * container_height / catch_threshold
         pygame.draw.rect(win, (255, 255, 255), (container_x + content_x, container_y + container_height - progress_height + content_y, container_width, progress_height))
 
-        # Draw the timer centered
+        # Draw the timer rectangle and text
         font = pygame.font.Font(None, 36)
         timer_text = font.render(f"Time: {int(timer)}", True, (255, 255, 255))
-        win.blit(timer_text, (content_x + WIDTH - timer_text.get_width() - 20, content_y + 20))
+        timer_rect = pygame.Rect(content_x + WIDTH - timer_text.get_width() - 30, content_y + 10, timer_text.get_width() + 20, timer_text.get_height() + 10)
+        pygame.draw.rect(win, (22, 76, 114), timer_rect)  # Rectangle color #164C72
+        win.blit(timer_text, (timer_rect.x + 10, timer_rect.y + 5))
 
-    # Draw retry button centered
+    # Draw retry button rectangle and text
     font = pygame.font.Font(None, 36)
     retry_text = font.render("Retry", True, (255, 255, 255))  # White text
-    win.blit(retry_text, (retry_button.x + content_x + 5, retry_button.y + content_y + 5))
+    retry_rect = pygame.Rect(retry_button.x + content_x, retry_button.y + content_y, retry_text.get_width() + 20, retry_text.get_height() + 10)
+    pygame.draw.rect(win, (22, 76, 114), retry_rect)  # Rectangle color #164C72
+    win.blit(retry_text, (retry_rect.x + 10, retry_rect.y + 5))
 
     pygame.display.update()
 
@@ -113,13 +117,14 @@ def move_fish():
     fish.y = max(container_y, min(fish.y, container_y + container_height - fish.height))
 
 def reset_game():
-    global catch_time, game_over, timer, last_time
+    global catch_time, game_over, timer, last_time, game_over_text
     bobber.y = (container_y + container_height // 2) - 80
     fish.y = random.randint(container_y, container_y + container_height - 70)
     catch_time = 0
     game_over = False
     timer = timer_start
     last_time = time.time()
+    game_over_text = ""
 
 run = True
 while run:
@@ -164,7 +169,7 @@ while run:
         # Check collision and update progress bar
         if bobber.colliderect(fish):
             catch_time += clock.get_time()
-            if catch_time >= catch_threshold and bobber.colliderect(fish):
+            if catch_time >= catch_threshold and not game_over:
                 game_over = True
                 game_over_text = "IT'S A CATCH!"
         else:
@@ -173,5 +178,10 @@ while run:
 
     # Draw everything
     draw_window()
+
+    # Additional check to ensure game state consistency
+    if game_over and game_over_text != "IT'S A CATCH!":
+        if catch_time < catch_threshold:
+            game_over_text = "IT SWAM AWAY..."
 
 pygame.quit()
