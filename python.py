@@ -37,8 +37,8 @@ catch_threshold = 5000  # Time in milliseconds required to catch the fish
 
 def draw_window():
     win.fill((255, 255, 255))  # Fill the window with a white color
-    win.blit(fish_image, (fish.x, fish.y))  # Draw fish first
-    win.blit(bobber_image, (bobber.x, bobber.y))
+    win.blit(bobber_image, (bobber.x, bobber.y))  # Draw bobber first
+    win.blit(fish_image, (fish.x, fish.y))  # Draw fish after to ensure it is in front
 
     if bobber.colliderect(fish):
         global catch_time
