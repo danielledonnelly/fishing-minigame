@@ -26,8 +26,13 @@ background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 # Define bobber and fish properties
-bobber = pygame.Rect((WIDTH // 2) - 120, (HEIGHT - 160) // 2, 80, 160)
-fish = pygame.Rect((WIDTH // 2) - 115, random.randint(0, HEIGHT - 70), 70, 70)
+container_x = (WIDTH // 2) + 40  # Adjust container to center the game content
+container_y = 50
+container_width = 60  # Adjusted width to 60 pixels
+container_height = HEIGHT - 100
+
+bobber = pygame.Rect((WIDTH // 2) - 120, (container_y + container_height // 2) - 80, 80, 160)
+fish = pygame.Rect((WIDTH // 2) - 115, random.randint(container_y, container_y + container_height - 70), 70, 70)
 
 # Bobber movement variables
 bobber_speed = 5
@@ -40,6 +45,7 @@ fish_direction = 1  # Initial direction
 # Catching mechanics
 catch_time = 0
 catch_threshold = 5000  # Time in milliseconds required to catch the fish
+catch_decrement = 50  # Decrement speed for the catch time when the bobber loses the fish
 
 # Timer
 timer_start = 15  # 15 seconds countdown
@@ -66,10 +72,6 @@ def draw_window():
         win.blit(fish_image, (fish.x, fish.y))  # Draw fish after to ensure it is in front
 
         # Draw the progress bar container
-        container_x = (WIDTH // 2) + 40  # Adjust container to center the game content
-        container_y = 50
-        container_width = 20
-        container_height = HEIGHT - 100
         pygame.draw.rect(win, (200, 200, 200), (container_x - 2, container_y - 2, container_width + 4, container_height + 4))
 
         # Draw the progress bar
@@ -83,8 +85,7 @@ def draw_window():
 
     # Draw retry button
     font = pygame.font.Font(None, 36)
-    retry_text = font.render("Retry", True, (255, 255, 255))
-    pygame.draw.rect(win, (0, 0, 0), retry_button)
+    retry_text = font.render("Retry", True, (255, 255, 255))  # White text
     win.blit(retry_text, (retry_button.x + 5, retry_button.y + 5))
 
     pygame.display.update()
@@ -97,12 +98,12 @@ def move_fish():
         fish_speed = random.randint(2, 6)  # Random speed between 2 and 6
 
     fish.y += fish_speed * fish_direction
-    fish.y = max(0, min(fish.y, HEIGHT - fish.height))
+    fish.y = max(container_y, min(fish.y, container_y + container_height - fish.height))
 
 def reset_game():
     global catch_time, game_over, timer, last_time
-    bobber.y = (HEIGHT - 160) // 2
-    fish.y = random.randint(0, HEIGHT - 70)
+    bobber.y = (container_y + container_height // 2) - 80
+    fish.y = random.randint(container_y, container_y + container_height - 70)
     catch_time = 0
     game_over = False
     timer = timer_start
@@ -139,7 +140,7 @@ while run:
 
         # Move the bobber
         bobber.y += bobber_speed * bobber_direction
-        bobber.y = max(0, min(bobber.y, HEIGHT - bobber.height))
+        bobber.y = max(container_y, min(bobber.y, container_y + container_height - bobber.height + 2))
 
         # Move the fish
         move_fish()
@@ -151,7 +152,8 @@ while run:
                 game_over = True
                 game_over_text = "IT'S A CATCH!"
         else:
-            catch_time = 0
+            catch_time -= catch_decrement
+            catch_time = max(0, catch_time)  # Ensure catch_time doesn't go below 0
 
     # Draw everything
     draw_window()
