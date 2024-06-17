@@ -47,7 +47,7 @@ catch_threshold = 5000  # Time in milliseconds required to catch the fish
 catch_decrement = 50  # Decrement speed for the catch time when the bobber loses the fish
 
 # Timer
-timer_start = 15  # 15 seconds countdown
+timer_start = 10  # 15 seconds countdown
 timer = timer_start
 last_time = time.time()
 
