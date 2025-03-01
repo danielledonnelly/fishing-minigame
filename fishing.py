@@ -140,6 +140,7 @@ while run:
             timer = 0
             game_over = True
             game_over_text = "IT SWAM AWAY..."
+            
 
     clock.tick(30)  # Frame rate of 30 FPS
 
@@ -167,7 +168,7 @@ while run:
 
         # Move the fish
         move_fish()
-
+        
         # Check collision and update progress bar
         if bobber.colliderect(fish):
             catch_time += clock.get_time()
