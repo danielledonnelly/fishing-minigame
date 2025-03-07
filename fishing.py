@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import os
 
 # Initialize Pygame
 pygame.init()
@@ -29,6 +30,7 @@ container_x = (WIDTH // 2) + 40  # Adjust container to center the game content
 container_y = 50
 container_width = 60  # Adjusted width to 60 pixels
 container_height = HEIGHT - 100
+caught = False  # Track if the fish has been caught
 
 bobber = pygame.Rect((WIDTH // 2) - 120, (container_y + container_height // 2) - 80, 80, 160)
 fish = pygame.Rect((WIDTH // 2) - 115, random.randint(container_y, container_y + container_height - 70), 70, 70)
@@ -138,6 +140,7 @@ while run:
             timer = 0
             game_over = True
             game_over_text = "IT SWAM AWAY..."
+            
 
     clock.tick(30)  # Frame rate of 30 FPS
 
@@ -165,12 +168,13 @@ while run:
 
         # Move the fish
         move_fish()
-
+        
         # Check collision and update progress bar
         if bobber.colliderect(fish):
             catch_time += clock.get_time()
             if catch_time >= catch_threshold and not game_over:
                 game_over = True
+                caught = True
                 game_over_text = "IT'S A CATCH!"
         else:
             catch_time -= catch_decrement
